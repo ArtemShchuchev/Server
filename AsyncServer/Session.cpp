@@ -125,10 +125,41 @@ void Session::createResponsePost()
 			}
 		}
 
+		
+		std::unordered_map<std::string, unsigned> LinkAmount;
 		std::wcout << L"Ищем слова:\n";
 		for (const auto& w : word) {
 			std::wcout << '\t' << w << '\n';
+
+			/*
+			SELECT l.link, lw.amount FROM link_word lw
+			JOIN links l ON l.id = lw.link_id
+			JOIN words w ON w.id = lw.word_id
+			WHERE w.word = 'ИСКОМОЕ СЛОВО (w)';
+			*/
+
+			std::string link;	// l.link
+			unsigned amount;	// lw.amount
+			LinkAmount[link] += amount;
 		}
+
+		std::vector<std::pair<std::string, unsigned>> linksSortedByAmount(
+			LinkAmount.begin(),
+			LinkAmount.end()
+		);
+		// сортирую по убыванию повторяемости:
+		std::sort(
+			linksSortedByAmount.begin(),
+			linksSortedByAmount.end(),
+			[](const auto& p1, const auto& p2) {
+				return p2.first > p2.second;
+			}
+		);
+
+		for (const auto& [link, amount] : linksSortedByAmount) {
+			std::wcout << utf82wideUtf(link) << "\t- " << amount << '\n';
+		}
+
 
 
 
