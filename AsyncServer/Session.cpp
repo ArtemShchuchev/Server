@@ -22,7 +22,7 @@ void Session::waitForRequest()
 				self->processingRequest();
 			} else {
 				consoleCol(col::br_red);
-				std::wcerr << L"Ошибка сессии: " << utf82wideUtf(ec.message()) << std::endl;
+				std::wcerr << L"Ошибка сессии: " << ansi2wideUtf(ec.message()) << std::endl;
 				consoleCol(col::cancel);
 			}
 		});
@@ -126,7 +126,7 @@ void Session::createResponsePost()
 			}
 		}
 
-		// Достаю из БД ссылки и повторяемоть для искомого слова
+		// Достаю из БД ссылки и повторяемость для искомого слова
 		if (word.empty() == false) {
 			std::unordered_map<std::string, unsigned> LinkAmount;
 			try
@@ -136,47 +136,65 @@ void Session::createResponsePost()
 			}
 			catch (const pqxx::broken_connection& err)
 			{
-				std::string err_str(err.what());
-				throw std::runtime_error("Ошибка PostgreSQL: " + err_str);
+				std::wstring err_str(L"Ошибка подключения к PostgreSQL: " + ansi2wideUtf(err.what()));
+				throw std::runtime_error(wideUtf2utf8(err_str));
 			}
 			catch (const std::exception& err)
 			{
-				std::wstring werr(L"Ошибка PostgreSQL: " + utf82wideUtf(err.what()));
-				throw std::runtime_error(wideUtf2ansi(werr));
+				std::string err_str("Ошибка PostgreSQL: ");
+				throw std::runtime_error(err_str + err.what());
 			}
 
-			std::vector<std::pair<std::string, unsigned>> linksSortedByAmount(
-				LinkAmount.begin(),
-				LinkAmount.end()
-			);
-
-			// сортирую по убыванию повторяемости:
-			std::sort(
-				linksSortedByAmount.begin(),
-				linksSortedByAmount.end(),
-				[](const auto& p1, const auto& p2) {
-					return p1.second > p2.second;
-				}
-			);
-
-			m_response.set(http::field::content_type, "text/html");
-			beast::ostream(m_response.body())
-				<< "<html>\n"
-				<< "<head><meta charset=\"UTF-8\"><title>Search Engine</title></head>\n"
-				<< "<body>\n"
-				<< "<h1>Поисковый движок</h1>\n"
-				<< "<p>Ссылки содержашие искомую фразу:<p>\n"
-				<< "<ul>\n";
-			for (const auto& [url, amount] : linksSortedByAmount) {
+			if (LinkAmount.empty())
+			{
+				m_response.set(http::field::content_type, "text/html");
 				beast::ostream(m_response.body())
-					<< "<li><a href=\""
-					<< url << "\">"
-					<< url << "</a></li>";
+					<< "<html>\n"
+					<< "<head><meta charset=\"UTF-8\"><title>Search Engine</title></head>\n"
+					<< "<body>\n"
+					<< "<h1>Поисковый движок</h1>\n"
+					<< "<p>К сожалению, ничего не нашлось. (<p>\n"
+					<< "<a href = \"..\\\">"
+					<< "Вернуться назад" << "</a>\n"
+					<< "</body>\n"
+					<< "</html>\n";
 			}
-			beast::ostream(m_response.body())
-				<< "</ul>\n"
-				<< "</body>\n"
-				<< "</html>\n";
+			else
+			{
+				// сортирую по убыванию повторяемости:
+				std::vector<std::pair<std::string, unsigned>> linksSortedByAmount(
+					LinkAmount.begin(),
+					LinkAmount.end()
+				);
+				std::sort(
+					linksSortedByAmount.begin(),
+					linksSortedByAmount.end(),
+					[](const auto& p1, const auto& p2) {
+						return p1.second > p2.second;
+					}
+				);
+
+				m_response.set(http::field::content_type, "text/html");
+				beast::ostream(m_response.body())
+					<< "<html>\n"
+					<< "<head><meta charset=\"UTF-8\"><title>Search Engine</title></head>\n"
+					<< "<body>\n"
+					<< "<h1>Поисковый движок</h1>\n"
+					<< "<p>Ссылки содержашие искомую фразу:<p>\n"
+					<< "<ul>\n";
+				for (const auto& [url, amount] : linksSortedByAmount) {
+					beast::ostream(m_response.body())
+						<< "<li><a href=\""
+						<< url << "\">"
+						<< url << "</a></li>";
+				}
+				beast::ostream(m_response.body())
+					<< "</ul>\n"
+					<< "<a href = \"..\\\">"
+					<< "Вернуться назад" << "</a>\n"
+					<< "</body>\n"
+					<< "</html>\n";
+			}
 		}
 		else
 		{
@@ -191,7 +209,7 @@ void Session::createResponsePost()
 				<< "    <label for=\"search\">Введите слова для поиска</label><br>\n"
 				<< "    <input type=\"text\" id=\"search\" name=\"search\"><br>\n"
 				<< "    <input type=\"submit\" value=\"Искать...\">\n"
-				<< "\n<h2>Нужно ввести хоть одно слово!</h2>\n"
+				<< "\n<h3>Нужно ввести хоть одно слово!</h3>\n"
 				<< "</form>\n"
 				<< "</body>\n"
 				<< "</html>\n";
