@@ -21,9 +21,9 @@ int main(int argc, char* argv[])
         connectDb.port = config.getConfig<unsigned>("BdConnect", "port");
         ////////////////
 
-        Clientdb db(connectDb);
+        //Clientdb db(connectDb);
 		boost::asio::io_context io_context;
-		Server s(io_context, serverPort);
+        Server s(io_context, serverPort, std::move(connectDb));
 		std::wcout << L"В адресной строке браузера, введите http://localhost:" << serverPort << std::endl;
 		io_context.run();
 	}

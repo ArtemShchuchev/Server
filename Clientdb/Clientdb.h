@@ -41,4 +41,6 @@ public:
 	int getIdLink(const std::string& link);
 	idWordAm_vec addWords(const WordMap wordAmount);
 	void addLinkWords(const int id, const idWordAm_vec& idWordAm);
+	std::unordered_map<std::string, unsigned> getLinkAmount(
+		const std::vector<std::string>& words);
 };

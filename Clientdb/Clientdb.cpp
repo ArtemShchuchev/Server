@@ -170,6 +170,44 @@ void Clientdb::addLinkWords(const int id, const idWordAm_vec& idWordAm)
 	tx.commit();
 }
 
+/*
+SELECT l.link, lw.amount FROM link_word lw
+JOIN links l ON l.id = lw.link_id
+JOIN words w ON w.id = lw.word_id
+WHERE w.word = 'ИСКОМОЕ СЛОВО (w)';
+*/
+std::unordered_map<std::string, unsigned> Clientdb::getLinkAmount(
+	const std::vector<std::string>& words)
+{
+	const std::string SQL_REQUEST{
+		"SELECT l.link, lw.amount FROM link_word lw "
+		"JOIN links l ON l.id = lw.link_id "
+		"JOIN words w ON w.id = lw.word_id "
+		"WHERE w.word = $1;" };
+
+	connect->prepare("get_link_amount", SQL_REQUEST);
+
+	std::unordered_map<std::string, unsigned> LinkAmount;
+	pqxx::work tx{ *connect };
+	for (auto& w : words)
+	{
+		auto row = tx.exec_prepared("get_link_amount", tx.esc(w));
+		
+		for (const auto& next : row) {
+			auto optionLink = next[0].as<std::optional<std::string>>();
+			auto optionAmount = next[1].as<std::optional<unsigned>>();
+
+			if (optionLink.has_value()) {
+				unsigned am = optionAmount.has_value() ? *optionAmount : 0;
+				LinkAmount[*optionLink] += am;
+			}
+		}
+	}
+	tx.commit();
+
+	return LinkAmount;
+}
+
 void Clientdb::createTable()
 {
 	const std::string CREATE_STR{ "CREATE TABLE IF NOT EXISTS " };

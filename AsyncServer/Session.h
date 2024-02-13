@@ -4,6 +4,7 @@
 #include <boost/beast.hpp>
 #include <boost/asio.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include "Clientdb.h"
 #include "SecondaryFunction.h"
 
 namespace beast = boost::beast;     // from <boost/beast.hpp>
@@ -22,6 +23,7 @@ private:
     http::response<http::dynamic_body> m_response;
     net::steady_timer m_deadline{
         m_socket.get_executor(), std::chrono::seconds(60) };
+    ConnectData m_cdata;
 
     void waitForRequest();
     void processingRequest();
@@ -33,7 +35,7 @@ private:
 	
 public:
     // конструктор сессии принимает socket
-    Session(tcp::socket socket);
+    Session(tcp::socket socket, const ConnectData& cdata);
     
     // run уже был вызван на нашем сервере, теперь мы просто ждем запросов
     void run();

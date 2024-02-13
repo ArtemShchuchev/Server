@@ -1,6 +1,7 @@
 #include "Session.h"
 
-Session::Session(tcp::socket socket) : m_socket(std::move(socket)) { }
+Session::Session(tcp::socket socket, const ConnectData& cdata)
+	: m_socket(std::move(socket)), m_cdata(std::move(cdata)) { }
 
 void Session::run()
 {
@@ -138,39 +139,49 @@ void Session::createResponsePost()
 			WHERE w.word = 'ИСКОМОЕ СЛОВО (w)';
 			*/
 
-			std::string link;	// l.link
-			unsigned amount;	// lw.amount
-			LinkAmount[link] += amount;
+			//std::string link;	// l.link
+			//unsigned amount;	// lw.amount
+			//LinkAmount[link] += amount;
+		}
+
+		//LinkAmount = 
+		// Достаю из БД ссылки и повторяемоть для искомого слова
+		if (word.empty() == false) {
+			try
+			{
+				Clientdb db(m_cdata);
+
+				LinkAmount = db.getLinkAmount(word);
+			}
+			catch (const pqxx::broken_connection& err)
+			{
+				std::string err_str(err.what());
+				throw std::runtime_error("Ошибка PostgreSQL: " + err_str);
+			}
+			catch (const std::exception& err)
+			{
+				std::wstring werr(L"Ошибка PostgreSQL: " + utf82wideUtf(err.what()));
+				throw std::runtime_error(wideUtf2ansi(werr));
+			}
 		}
 
 		std::vector<std::pair<std::string, unsigned>> linksSortedByAmount(
 			LinkAmount.begin(),
 			LinkAmount.end()
 		);
+
 		// сортирую по убыванию повторяемости:
 		std::sort(
 			linksSortedByAmount.begin(),
 			linksSortedByAmount.end(),
 			[](const auto& p1, const auto& p2) {
-				return p2.first > p2.second;
+				return p1.second > p2.second;
 			}
 		);
 
 		for (const auto& [link, amount] : linksSortedByAmount) {
 			std::wcout << utf82wideUtf(link) << "\t- " << amount << '\n';
 		}
-
-
-
-
-
-		std::vector<std::string> searchResult = {
-			"https://en.wikipedia.org/wiki/Main_Page",
-			"https://en.wikipedia.org/wiki/Wikipedia",
-		};
-
-
-
 
 
 
@@ -183,7 +194,7 @@ void Session::createResponsePost()
 			<< "<p>Response:<p>\n"
 			<< "<ul>\n";
 
-		for (const auto& url : searchResult) {
+		for (const auto& [url, amount] : linksSortedByAmount) {
 
 			beast::ostream(m_response.body())
 				<< "<li><a href=\""
