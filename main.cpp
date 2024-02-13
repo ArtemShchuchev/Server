@@ -25,14 +25,6 @@ int main()
 		std::wcout << L"В адресной строке браузера, введите http://localhost:" << serverPort << std::endl;
 		io_context.run();
 	}
-    catch (const pqxx::broken_connection& err)
-    {
-        consoleCol(col::br_red);
-        std::wcerr << L"\nОшибка типа: " << typeid(err).name() << "\n";
-        std::wcerr << ansi2wideUtf(err.what()) << '\n';
-        consoleCol(col::cancel);
-        return EXIT_FAILURE;
-    }
     catch (const std::exception& err)
     {
         consoleCol(col::br_red);
