@@ -1,7 +1,7 @@
-#include "Session.h"
+Ôªø#include "Session.h"
 
 Session::Session(tcp::socket socket, const ConnectData& cdata)
-	: m_socket(std::move(socket)), m_cdata(std::move(cdata)) { }
+	: m_socket(std::move(socket)), m_cdata(cdata) { }
 
 void Session::run()
 {
@@ -11,18 +11,18 @@ void Session::run()
 
 void Session::waitForRequest()
 {
-	// Ú.Í. ÌÛÊÌÓ Á‡ÔÓÏÌËÚ¸ `this` ‰Îˇ Ó·‡ÚÌÓ„Ó ‚˚ÁÓ‚‡, Ì‡Ï ÌÛÊÌÓ ‚˚Á‚‡Ú¸ shared_from_this()
+	// —Ç.–∫. –Ω—É–∂–Ω–æ –∑–∞–ø–æ–º–Ω–∏—Ç—å `this` –¥–ª—è –æ–±—Ä–∞—Ç–Ω–æ–≥–æ –≤—ã–∑–æ–≤–∞, –Ω–∞–º –Ω—É–∂–Ω–æ –≤—ã–∑–≤–∞—Ç—å shared_from_this()
 	auto self(shared_from_this());
-	// Í‡Í ÚÓÎ¸ÍÓ ÔË·Û‰ÛÚ ‰‡ÌÌ˚Â, ·Û‰ÂÚ ‚˚Á˚‚‡Ì‡ ÎˇÏ·‰‡
+	// –∫–∞–∫ —Ç–æ–ª—å–∫–æ –ø—Ä–∏–±—É–¥—É—Ç –¥–∞–Ω–Ω—ã–µ, –±—É–¥–µ—Ç –≤—ã–∑—ã–≤–∞–Ω–∞ –ª—è–º–±–¥–∞
 	http::async_read(m_socket, m_buffer, m_request,
 		[this, self](boost::system::error_code ec, std::size_t /*length*/)
 		{
-			// ÂÒÎË Ó¯Ë·ÍË ÌÂ ·˚ÎÓ, ÁÌ‡˜ËÚ ‚ÒÂ ÔÓ¯ÎÓ ıÓÓ¯Ó
+			// –µ—Å–ª–∏ –æ—à–∏–±–∫–∏ –Ω–µ –±—ã–ª–æ, –∑–Ω–∞—á–∏—Ç –≤—Å–µ –ø—Ä–æ—à–ª–æ —Ö–æ—Ä–æ—à–æ
 			if (!ec) {
 				self->processingRequest();
 			} else {
 				consoleCol(col::br_red);
-				std::wcerr << L"Œ¯Ë·Í‡ ÒÂÒÒËË: " << utf82wideUtf(ec.message()) << std::endl;
+				std::wcerr << L"–û—à–∏–±–∫–∞ —Å–µ—Å—Å–∏–∏: " << utf82wideUtf(ec.message()) << std::endl;
 				consoleCol(col::cancel);
 			}
 		});
@@ -69,12 +69,12 @@ void Session::createResponseGet()
 			<< "<html>\n"
 			<< "<head><meta charset=\"UTF-8\"><title>Search Engine</title></head>\n"
 			<< "<body>\n"
-			<< "<h1>Search Engine</h1>\n"
-			<< "<p>Welcome!<p>\n"
+			<< "<h1>–ü–æ–∏—Å–∫–æ–≤—ã–π –¥–≤–∏–∂–æ–∫</h1>\n"
+			<< "<p>–î–æ–±—Ä–æ –ø–æ–∂–∞–ª–æ–≤–∞—Ç—å!<p>\n"
 			<< "<form action=\"/\" method=\"post\">\n"
-			<< "    <label for=\"search\">Search:</label><br>\n"
+			<< "    <label for=\"search\">–í–≤–µ–¥–∏—Ç–µ —Å–ª–æ–≤–∞ –¥–ª—è –ø–æ–∏—Å–∫–∞</label><br>\n"
 			<< "    <input type=\"text\" id=\"search\" name=\"search\"><br>\n"
-			<< "    <input type=\"submit\" value=\"Search\">\n"
+			<< "    <input type=\"submit\" value=\"–ò—Å–∫–∞—Ç—å...\">\n"
 			<< "</form>\n"
 			<< "</body>\n"
 			<< "</html>\n";
@@ -111,7 +111,7 @@ void Session::createResponsePost()
 			return;
 		}
 
-		// ‚˚‰ÂÎËÎ ËÒÍÓÏ˚Â ÒÎÓ‚‡
+		// –≤—ã–¥–µ–ª–∏–ª –∏—Å–∫–æ–º—ã–µ —Å–ª–æ–≤–∞
 		std::vector<std::string> word;
 		while (true)
 		{
@@ -121,91 +121,81 @@ void Session::createResponsePost()
 				word.push_back(s.substr(0, pos));
 			}
 			else {
-				word.push_back(s);
+				if (!s.empty()) word.push_back(s);
 				break;
 			}
 		}
 
-		
-		std::unordered_map<std::string, unsigned> LinkAmount;
-		std::wcout << L"»˘ÂÏ ÒÎÓ‚‡:\n";
-		for (const auto& w : word) {
-			std::wcout << '\t' << w << '\n';
-
-			/*
-			SELECT l.link, lw.amount FROM link_word lw
-			JOIN links l ON l.id = lw.link_id
-			JOIN words w ON w.id = lw.word_id
-			WHERE w.word = '»— ŒÃŒ≈ —ÀŒ¬Œ (w)';
-			*/
-
-			//std::string link;	// l.link
-			//unsigned amount;	// lw.amount
-			//LinkAmount[link] += amount;
-		}
-
-		//LinkAmount = 
-		// ƒÓÒÚ‡˛ ËÁ ¡ƒ ÒÒ˚ÎÍË Ë ÔÓ‚ÚÓˇÂÏÓÚ¸ ‰Îˇ ËÒÍÓÏÓ„Ó ÒÎÓ‚‡
+		// –î–æ—Å—Ç–∞—é –∏–∑ –ë–î —Å—Å—ã–ª–∫–∏ –∏ –ø–æ–≤—Ç–æ—Ä—è–µ–º–æ—Ç—å –¥–ª—è –∏—Å–∫–æ–º–æ–≥–æ —Å–ª–æ–≤–∞
 		if (word.empty() == false) {
+			std::unordered_map<std::string, unsigned> LinkAmount;
 			try
 			{
 				Clientdb db(m_cdata);
-
 				LinkAmount = db.getLinkAmount(word);
 			}
 			catch (const pqxx::broken_connection& err)
 			{
 				std::string err_str(err.what());
-				throw std::runtime_error("Œ¯Ë·Í‡ PostgreSQL: " + err_str);
+				throw std::runtime_error("–û—à–∏–±–∫–∞ PostgreSQL: " + err_str);
 			}
 			catch (const std::exception& err)
 			{
-				std::wstring werr(L"Œ¯Ë·Í‡ PostgreSQL: " + utf82wideUtf(err.what()));
+				std::wstring werr(L"–û—à–∏–±–∫–∞ PostgreSQL: " + utf82wideUtf(err.what()));
 				throw std::runtime_error(wideUtf2ansi(werr));
 			}
-		}
 
-		std::vector<std::pair<std::string, unsigned>> linksSortedByAmount(
-			LinkAmount.begin(),
-			LinkAmount.end()
-		);
+			std::vector<std::pair<std::string, unsigned>> linksSortedByAmount(
+				LinkAmount.begin(),
+				LinkAmount.end()
+			);
 
-		// ÒÓÚËÛ˛ ÔÓ Û·˚‚‡ÌË˛ ÔÓ‚ÚÓˇÂÏÓÒÚË:
-		std::sort(
-			linksSortedByAmount.begin(),
-			linksSortedByAmount.end(),
-			[](const auto& p1, const auto& p2) {
-				return p1.second > p2.second;
-			}
-		);
+			// —Å–æ—Ä—Ç–∏—Ä—É—é –ø–æ —É–±—ã–≤–∞–Ω–∏—é –ø–æ–≤—Ç–æ—Ä—è–µ–º–æ—Å—Ç–∏:
+			std::sort(
+				linksSortedByAmount.begin(),
+				linksSortedByAmount.end(),
+				[](const auto& p1, const auto& p2) {
+					return p1.second > p2.second;
+				}
+			);
 
-		for (const auto& [link, amount] : linksSortedByAmount) {
-			std::wcout << utf82wideUtf(link) << "\t- " << amount << '\n';
-		}
-
-
-
-		m_response.set(http::field::content_type, "text/html");
-		beast::ostream(m_response.body())
-			<< "<html>\n"
-			<< "<head><meta charset=\"UTF-8\"><title>Search Engine</title></head>\n"
-			<< "<body>\n"
-			<< "<h1>Search Engine</h1>\n"
-			<< "<p>Response:<p>\n"
-			<< "<ul>\n";
-
-		for (const auto& [url, amount] : linksSortedByAmount) {
-
+			m_response.set(http::field::content_type, "text/html");
 			beast::ostream(m_response.body())
-				<< "<li><a href=\""
-				<< url << "\">"
-				<< url << "</a></li>";
+				<< "<html>\n"
+				<< "<head><meta charset=\"UTF-8\"><title>Search Engine</title></head>\n"
+				<< "<body>\n"
+				<< "<h1>–ü–æ–∏—Å–∫–æ–≤—ã–π –¥–≤–∏–∂–æ–∫</h1>\n"
+				<< "<p>–°—Å—ã–ª–∫–∏ —Å–æ–¥–µ—Ä–∂–∞—à–∏–µ –∏—Å–∫–æ–º—É—é —Ñ—Ä–∞–∑—É:<p>\n"
+				<< "<ul>\n";
+			for (const auto& [url, amount] : linksSortedByAmount) {
+				beast::ostream(m_response.body())
+					<< "<li><a href=\""
+					<< url << "\">"
+					<< url << "</a></li>";
+			}
+			beast::ostream(m_response.body())
+				<< "</ul>\n"
+				<< "</body>\n"
+				<< "</html>\n";
 		}
-
-		beast::ostream(m_response.body())
-			<< "</ul>\n"
-			<< "</body>\n"
-			<< "</html>\n";
+		else
+		{
+			m_response.set(http::field::content_type, "text/html");
+			beast::ostream(m_response.body())
+				<< "<html>\n"
+				<< "<head><meta charset=\"UTF-8\"><title>Search Engine</title></head>\n"
+				<< "<body>\n"
+				<< "<h1>–ü–æ–∏—Å–∫–æ–≤—ã–π –¥–≤–∏–∂–æ–∫</h1>\n"
+				<< "<p>–î–æ–±—Ä–æ –ø–æ–∂–∞–ª–æ–≤–∞—Ç—å!<p>\n"
+				<< "<form action=\"/\" method=\"post\">\n"
+				<< "    <label for=\"search\">–í–≤–µ–¥–∏—Ç–µ —Å–ª–æ–≤–∞ –¥–ª—è –ø–æ–∏—Å–∫–∞</label><br>\n"
+				<< "    <input type=\"text\" id=\"search\" name=\"search\"><br>\n"
+				<< "    <input type=\"submit\" value=\"–ò—Å–∫–∞—Ç—å...\">\n"
+				<< "\n<h2>–ù—É–∂–Ω–æ –≤–≤–µ—Å—Ç–∏ —Ö–æ—Ç—å –æ–¥–Ω–æ —Å–ª–æ–≤–æ!</h2>\n"
+				<< "</form>\n"
+				<< "</body>\n"
+				<< "</html>\n";
+		}
 	}
 	else
 	{

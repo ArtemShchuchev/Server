@@ -33,19 +33,6 @@ if(NOT Boost_FOUND)
 	message(FATAL_ERROR "Could not find Boost")
 endif()
 
-add_executable(${OUTPUT_NAME} ${HEADERS} ${SOURCES})
-
-# PQXX
-#set(PostgreSQL_ADDITIONAL_VERSIONS "15")
-set(SKIP_BUILD_TEST ON)
-add_subdirectory(${LIBPQ_ROOT} build-pqxx)
-
-target_include_directories(${OUTPUT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
-
-target_link_libraries(${OUTPUT_NAME} PRIVATE
-										${Boost_LIBRARIES}
-										pqxx)
-
 #[[ if (Visual Studio)
 	настраиваю в качестве запускаемого проекта
 	настройка на стандарт с++17 ]]
@@ -59,3 +46,16 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 else()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif()
+
+add_executable(${OUTPUT_NAME} ${HEADERS} ${SOURCES})
+
+# PQXX
+#set(PostgreSQL_ADDITIONAL_VERSIONS "15")
+set(SKIP_BUILD_TEST ON)
+add_subdirectory(${LIBPQ_ROOT} build-pqxx)
+
+target_include_directories(${OUTPUT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
+
+target_link_libraries(${OUTPUT_NAME} PRIVATE
+										${Boost_LIBRARIES}
+										pqxx)

@@ -1,9 +1,8 @@
 ﻿#include "Server.h"
 
-Server::Server(net::io_context& io_context, unsigned port, const ConnectData& cdata)
+Server::Server(net::io_context& io_context, unsigned port, const ConnectData&& cdata)
 : m_acceptor(io_context, tcp::endpoint(tcp::v4(), port))
 {
-	// вызываем do_accept(), где ждем подключения клиентов
 	do_accept(cdata);
 }
 

@@ -15,5 +15,5 @@ private:
 
 public:
     // нам нужен io_context и порт, который мы будем прослушивать
-    Server(net::io_context& io_context, unsigned port, const ConnectData& cdata);
+    Server(net::io_context& io_context, unsigned port, const ConnectData&& cdata);
 };

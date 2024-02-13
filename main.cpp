@@ -1,11 +1,10 @@
 ﻿#include <iostream>
 #include "Clientdb.h"
 #include "ConfigFile.h"
-#include "Session.h"
 #include "Server.h"
 #include "SecondaryFunction.h"
 
-int main(int argc, char* argv[])
+int main()
 {
 	setRuLocale();
 
@@ -21,7 +20,6 @@ int main(int argc, char* argv[])
         connectDb.port = config.getConfig<unsigned>("BdConnect", "port");
         ////////////////
 
-        //Clientdb db(connectDb);
 		boost::asio::io_context io_context;
         Server s(io_context, serverPort, std::move(connectDb));
 		std::wcout << L"В адресной строке браузера, введите http://localhost:" << serverPort << std::endl;

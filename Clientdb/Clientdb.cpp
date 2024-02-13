@@ -170,12 +170,6 @@ void Clientdb::addLinkWords(const int id, const idWordAm_vec& idWordAm)
 	tx.commit();
 }
 
-/*
-SELECT l.link, lw.amount FROM link_word lw
-JOIN links l ON l.id = lw.link_id
-JOIN words w ON w.id = lw.word_id
-WHERE w.word = 'ИСКОМОЕ СЛОВО (w)';
-*/
 std::unordered_map<std::string, unsigned> Clientdb::getLinkAmount(
 	const std::vector<std::string>& words)
 {

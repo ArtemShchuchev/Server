@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 
 #include <iostream>
 #include <boost/beast.hpp>
@@ -12,8 +12,8 @@ namespace http = beast::http;       // from <boost/beast/http.hpp>
 namespace net = boost::asio;        // from <boost/asio.hpp>
 using tcp = net::ip::tcp;           // from <boost/asio/ip/tcp.hpp>
 
-// т.к. Session был создан как shared ptr, и позже нам понадобится
-// `this`, поэтому нам нужно наследоваться от enable_shared_from_this
+// С‚.Рє. Session Р±С‹Р» СЃРѕР·РґР°РЅ РєР°Рє shared ptr, Рё РїРѕР·Р¶Рµ РЅР°Рј РїРѕРЅР°РґРѕР±РёС‚СЃСЏ
+// `this`, РїРѕСЌС‚РѕРјСѓ РЅР°Рј РЅСѓР¶РЅРѕ РЅР°СЃР»РµРґРѕРІР°С‚СЊСЃСЏ РѕС‚ enable_shared_from_this
 class Session : public std::enable_shared_from_this<Session>
 {
 private:
@@ -34,9 +34,9 @@ private:
     void checkDeadline();
 	
 public:
-    // конструктор сессии принимает socket
+    // РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ СЃРµСЃСЃРёРё РїСЂРёРЅРёРјР°РµС‚ socket
     Session(tcp::socket socket, const ConnectData& cdata);
     
-    // run уже был вызван на нашем сервере, теперь мы просто ждем запросов
+    // run СѓР¶Рµ Р±С‹Р» РІС‹Р·РІР°РЅ РЅР° РЅР°С€РµРј СЃРµСЂРІРµСЂРµ, С‚РµРїРµСЂСЊ РјС‹ РїСЂРѕСЃС‚Рѕ Р¶РґРµРј Р·Р°РїСЂРѕСЃРѕРІ
     void run();
 };
